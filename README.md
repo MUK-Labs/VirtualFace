@@ -24,9 +24,9 @@ The Stamm reconstruction uses eight raw MIDI channels by default. The Vogel layo
 
 ## Sources and tuning
 
-[Stamm’s description and photos](https://eufonia.de/the-enharmonic-pipe-organ/) document the built special manual. [Soyka’s report, pp. 4–5](https://www.soyka-musik.at/media/content/downloads/u.-d._soyka_arbeitsbericht_sinfonie_in_yes-dur_die_unspielbare.pdf#page=4) shows the organ and reproduces Vogel’s labeled 1968 drawing. The original VirtualFace layout transcribes 145 labeled positions in that drawing.
+[Schumacher’s detailed keyboard photograph](https://www.orgel-schumacher.com/media/1261/enharmonische-o_0001.jpg) and [Stamm’s console photo](https://eufonia.de/wp-content/uploads/Enh._Orgel_Totale-scaled.jpg) document the built special manual. [Stamm’s description](https://eufonia.de/the-enharmonic-pipe-organ/) identifies the different key materials and the mechanically split walnut keys. [Soyka’s report, pp. 4–5](https://www.soyka-musik.at/media/content/downloads/u.-d._soyka_arbeitsbericht_sinfonie_in_yes-dur_die_unspielbare.pdf#page=4) shows the organ and reproduces Vogel’s labeled 1968 drawing. The original VirtualFace layout transcribes 145 labeled positions in that drawing.
 
-The built-manual view reconstructs the staggered special manual from photographs, including the split walnut keys and round septimal buttons. Some positions at the edges are estimated. Its pitches and octave placement use a theoretical model derived from Vogel’s notation. The two halves of each split key share a nominal pitch and have distinct raw addresses. Both layouts use VirtualFace’s own MIDI map. Measurements of the pipes and the organ’s hardware MIDI map would be needed to calibrate the reconstruction.
+The built-manual view uses the measured ivory-bar centers to place the staggered groups. It models the uneven edges and the different wood and ivory finishes of the round septimal buttons. Some edge positions remain estimates. Retained positions keep their original raw MIDI addresses. Its pitches and octave placement use a theoretical model derived from Vogel’s notation. The two halves of each split key share a nominal pitch and have distinct raw addresses. Both layouts use VirtualFace’s own MIDI map. Measurements of the pipes and the organ’s hardware MIDI map would be needed to calibrate the reconstruction.
 
 ## Run locally
 

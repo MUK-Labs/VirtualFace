@@ -354,6 +354,7 @@ function drawKeyboard() {
     button.dataset.key = key.id;
     button.dataset.shape = key.shape;
     button.dataset.kind = key.kind;
+    if (key.finish) button.dataset.finish = key.finish;
     button.dataset.midiNote = key.midiNote;
     button.dataset.channelOffset = channelOffset(key);
     button.setAttribute("aria-label", key.label);
@@ -368,6 +369,7 @@ function drawKeyboard() {
     keysByAddress.set(address(channelOffset(key), key.midiNote), key);
     fragment.append(button);
   }
+  keyboard.dataset.layout = layout.id;
   keyboard.replaceChildren(fragment);
 }
 
@@ -384,7 +386,7 @@ function setLayout(id, updateUrl = false) {
     previousChannel !== anyChannel.id && Number(previousChannel) ? previousChannel : banks === 1 ? anyChannel.id : "1");
   inputChannel.labels[0].firstChild.textContent = banks > 1 ? "Input base channel" : "Input channel";
   sourceLink.href = layout.sourceUrl;
-  sourceLink.textContent = layout === stammLayout ? "Stamm’s console" : "Vogel’s drawing";
+  sourceLink.textContent = layout.sourceLabel ?? "Vogel’s drawing";
   showKey(null);
   drawKeyboard();
   updateInput();

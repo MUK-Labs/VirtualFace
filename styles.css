@@ -289,3 +289,34 @@ h1 { margin: .25rem 0 .15rem; font-size: clamp(1.1rem, 3vw, 1.8rem); font-weight
   .actions .control { min-width: 2rem; gap: .28rem; padding-inline: .35rem; }
   .footer .legend { display: none; }
 }
+
+.keyboard[data-layout="stamm"] .key[data-shape="rect"] {
+  border-radius: 2px;
+}
+.key[data-finish="ivory"] {
+  --top: #f8ebcf;
+  --bottom: #cec2a7;
+  --border: #fff1d8;
+  --text: #231e18;
+}
+.key[data-finish="ebony"] {
+  --top: #363531;
+  --bottom: #201e1c;
+  --border: #66605a;
+}
+.key[data-finish="mahogany"] {
+  --top: #a36c50;
+  --bottom: #6e382a;
+  --border: #bb826a;
+}
+.key[data-finish="walnut"] {
+  --top: #a47a51;
+  --bottom: #654222;
+  --border: #bc9065;
+}
+.key[data-finish="boxwood"] {
+  --top: #d7ab69;
+  --bottom: #a16c34;
+  --border: #e9b57f;
+  --text: #25190a;
+}
