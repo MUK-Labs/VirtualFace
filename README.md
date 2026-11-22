@@ -9,24 +9,17 @@ A browser instrument for exploring microtonal keyboard layouts. [Open VirtualFac
 - Tab to the manual, use the arrow keys to move, and hold Space or Enter to play. **Fullscreen** expands the playing surface.
 - Hover over or focus a key to see its reference frequency and raw MIDI address. The app sets the diagram’s reference C to MIDI 60 (about 261.63 Hz).
 
+## Guide
+
+Read the [VirtualFace guide](https://muk-labs.github.io/VirtualFace/guide.html) for the history of both layouts, how the tuning works, and a worked example.
+
 ## MIDI
 
-Open **MIDI**, choose **Enable MIDI**, and select your devices. Input accepts raw key addresses for the chosen layout and lights the keys. **Release all notes** clears held input and output notes.
-
-| Output format | What it sends |
-| --- | --- |
-| **Raw key addresses** | A distinct MIDI channel and note for each physical key position. Use this for recording gestures or controlling a custom patch. |
-| **Note + pitch bend** | The nearest MIDI note and a bend for the key’s nominal tuning. Set the receiving instrument’s bend range to match VirtualFace (default ±2 semitones). |
-
-For tuned output, choose **Multiple channels** if the receiving instrument or DAW patch preserves independent pitch bends on different channels. VirtualFace allocates one channel per held note, up to 15, and skips channel 10. Choose **Single channel** for a receiver that listens to one channel. This mode plays one tuned note at a time. The two formats are selectable on the same output port.
-
-The Stamm reconstruction uses eight raw MIDI channels by default. The Vogel layout uses two (notes 24–127 on channel 1 and notes 24–64 on channel 2). For either layout, raw addresses start at note 24 on each consecutive channel. Use the MIDI panel to select the base channels. Channel numbering wraps from 16 to 1.
+The guide covers raw input, raw and tuned outputs, and pitch-bend settings. [MIDI setup and address mapping](https://muk-labs.github.io/VirtualFace/guide.html#midi)
 
 ## Sources and tuning
 
-[Schumacher’s detailed keyboard photograph](https://www.orgel-schumacher.com/media/1261/enharmonische-o_0001.jpg) and [Stamm’s console photo](https://eufonia.de/wp-content/uploads/Enh._Orgel_Totale-scaled.jpg) document the built special manual. [Stamm’s description](https://eufonia.de/the-enharmonic-pipe-organ/) identifies the different key materials and the mechanically split walnut keys. [Soyka’s report, pp. 4–5](https://www.soyka-musik.at/media/content/downloads/u.-d._soyka_arbeitsbericht_sinfonie_in_yes-dur_die_unspielbare.pdf#page=4) shows the organ and reproduces Vogel’s labeled 1968 drawing. The original VirtualFace layout transcribes 145 labeled positions in that drawing.
-
-The built-manual view uses the measured ivory-bar centers to place the staggered groups. It models the uneven edges and the different wood and ivory finishes of the round septimal buttons. Some edge positions remain estimates. Retained positions keep their original raw MIDI addresses. Its pitches and octave placement use a theoretical model derived from Vogel’s notation. The two halves of each split key share a nominal pitch and have distinct raw addresses. Both layouts use VirtualFace’s own MIDI map. Measurements of the pipes and the organ’s hardware MIDI map would be needed to calibrate the reconstruction.
+The guide links to the original drawing, photographs, and technical sources. [The two layouts](https://muk-labs.github.io/VirtualFace/guide.html#layouts) · [Tuning and notation](https://muk-labs.github.io/VirtualFace/guide.html#tuning)
 
 ## Run locally
 

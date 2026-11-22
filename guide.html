@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#000000">
+  <meta name="description" content="The history, tuning and MIDI mapping of the two Enharmonic Pipe Organ layouts in VirtualFace.">
+  <title>Guide · VirtualFace</title>
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body class="guide-page">
+  <header class="guide-header">
+    <a class="wordmark" href="./"><span class="wordmark-icon" aria-hidden="true"></span>VirtualFace</a>
+    <a class="control" href="./">Open the keyboard</a>
+  </header>
+
+  <main class="guide-main">
+    <h1>Playing the Enharmonic Pipe Organ</h1>
+    <p class="guide-intro">Explore Martin Vogel’s 1968 drawing and the special manual built for Hans-André Stamm. Both layouts play reference pitches in your browser and can send MIDI to an external instrument.</p>
+
+    <nav class="guide-nav" aria-label="On this page">
+      <a href="#layouts">Layouts</a>
+      <a href="#tuning">Tuning and notation</a>
+      <a href="#midi">MIDI setup</a>
+      <a href="#example">Worked example</a>
+    </nav>
+
+    <section id="layouts" aria-labelledby="layouts-title">
+      <h2 id="layouts-title">The two layouts</h2>
+      <h3>Vogel’s 1968 drawing</h3>
+      <p>Martin Vogel of the University of Bonn published a keyboard design in <cite>Die Zukunft der Musik</cite> in 1968. The layout puts fifths, thirds and septimal intervals in recurring positions around the larger keys. Ulf-Diether Soyka reproduced the drawing in the work report for his Third Symphony. VirtualFace transcribes its 145 labeled positions. <a href="https://www.soyka-musik.at/media/content/downloads/u.-d._soyka_arbeitsbericht_sinfonie_in_yes-dur_die_unspielbare.pdf#page=5">See the drawing on page 5</a> or <a href="./?layout=vogel">play the Vogel layout</a>.</p>
+
+      <h3>Stamm’s built manual</h3>
+      <p>Hans-André Stamm commissioned the organ in 1978 while studying in Bonn. Schumacher built it in Eupen in 1979 from Vogel’s plans. The console has a special upper manual, two conventional manuals that can each be assigned a selection of twelve pitches, and a pedalboard. The special manual gives direct access to the organ’s just-intonation pitches. Stamm specifies 48 tones per octave and 328 pipes. <a href="https://eufonia.de/microtonal-music/">Stamm on the commission</a> · <a href="https://eufonia.de/the-enharmonic-pipe-organ/">Stamm’s technical description</a> · <a href="https://www.orgel-schumacher.com/de/projekte/curiosa/enharmonische-orgel?Culture=de">Schumacher’s instrument record</a></p>
+      <p>Stamm describes eight staggered rows, placed a whole tone apart, so the same fingering can be reused in different tonalities. He documents the addition of MIDI during the 1994–99 loan to the Royal Conservatory in The Hague. Soyka reports working with the organ from 2006 and recording with it at Vienna’s Prayner-Konservatorium. <a href="https://eufonia.de/the-enharmonic-pipe-organ/">Stamm’s account</a> · <a href="https://www.soyka-musik.at/media/content/downloads/u.-d._soyka_arbeitsbericht_sinfonie_in_yes-dur_die_unspielbare.pdf#page=4">Soyka’s report and console photo</a></p>
+
+      <div class="guide-table">
+        <table>
+          <caption>Reading the physical key shapes</caption>
+          <thead><tr><th scope="col">Key</th><th scope="col">Interval role</th></tr></thead>
+          <tbody>
+            <tr><th scope="row">Broad walnut keys</th><td>Octaves and fifths. Each broad key has two halves for mechanical reasons.</td></tr>
+            <tr><th scope="row">Narrow ivory and ebony keys</th><td>Upward and downward chromatic neighbors, respectively.</td></tr>
+            <tr><th scope="row">Medium boxwood and mahogany keys</th><td>Major and minor thirds, respectively.</td></tr>
+            <tr><th scope="row">Round buttons</th><td>Septimal intervals, which bring the prime factor 7 into the tuning.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>VirtualFace models 746 playable positions on the photographed special manual, including the split halves. The reconstruction follows the stagger and stepped edges, with some edge positions estimated. <a href="https://www.orgel-schumacher.com/media/1261/enharmonische-o_0001.jpg">Schumacher’s keyboard close-up</a> · <a href="https://eufonia.de/wp-content/uploads/Enh._Orgel_Totale-scaled.jpg">Stamm’s full-console photo</a> · <a href="./">Play the Stamm layout</a></p>
+    </section>
+
+    <section id="tuning" aria-labelledby="tuning-title">
+      <h2 id="tuning-title">Tuning and notation</h2>
+      <p>Just intonation expresses an interval as a frequency ratio. A pure fifth is 3/2, a pure major third is 5/4, and a harmonic seventh is 7/4. VirtualFace uses the German pitch name <code>h</code> for B natural and <code>b</code> for B-flat.</p>
+      <ul>
+        <li>A numbered superscript such as <code>⁻¹</code> lowers the note by one syntonic comma (81/80, about 21.51 cents). <code>⁺¹</code> raises it by the same amount.</li>
+        <li>A sign on the same line as the note name marks a septimal comma (64/63, about 27.26 cents). For example, <code>b−</code> lowers the Pythagorean B-flat (16/9) to 7/4 above C.</li>
+      </ul>
+      <p>VirtualFace sets the reference C to MIDI note 60 in standard tuning, about 261.63 Hz. The sine tone and tuned MIDI output use the same nominal ratios, with register inferred from the layout. The organ’s actual key-to-pipe assignments and measured frequencies remain unverified.</p>
+    </section>
+
+    <section id="midi" aria-labelledby="midi-title">
+      <h2 id="midi-title">MIDI setup</h2>
+      <p>Choose a layout, then open <strong>MIDI</strong> and select <strong>Enable MIDI</strong>. Grant permission and choose your input and output devices. Hover over a key or focus it with Tab and the arrow keys to see its reference frequency and raw MIDI address. The built-in <strong>Sine</strong> tone works without MIDI permission. <a href="https://developer.mozilla.org/en-US/docs/Web/API/Web_MIDI_API">Web MIDI browser support</a></p>
+
+      <h3>Raw key addresses and MIDI input</h3>
+      <p>Each playable position has a raw MIDI note number and a channel offset. The selected input or output base channel determines where that layout’s first channel starts. Change the base channel to move the entire block. Channels wrap from 16 back to 1, while the note numbers stay fixed.</p>
+
+      <div class="guide-table">
+        <table>
+          <caption>Raw address ranges with base channel 1</caption>
+          <thead><tr><th scope="col">Layout</th><th scope="col">Channels</th><th scope="col">Assignment</th></tr></thead>
+          <tbody>
+            <tr><th scope="row">Vogel</th><td>1–2</td><td>Positions in nominal pitch order. Notes 24–127 on channel 1, then 24–64 on channel 2.</td></tr>
+            <tr><th scope="row">Stamm</th><td>1–8</td><td>Positional assignments. The edge revisions left gaps so retained keys could keep their existing addresses. The restored walnut halves use channel 8, notes 111–114.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>For example, the reference C in the Vogel layout is channel 1, note 44. The corresponding two walnut halves in the Stamm layout are channel 4, notes 120 and 121. If Stamm’s base channel is set to 15, both halves move to channel 2. They share a reference pitch, so either half sends note 60 in tuned mode.</p>
+      <p><strong>Raw key addresses</strong> sends these pairs on press and release for recording gestures or driving a custom patch. MIDI input uses raw addresses for the selected layout in either output mode, with an independent input base channel. Incoming Note On and Note Off light and release the keys. Browser audio and outgoing MIDI respond to local playing. The app’s raw addresses are specific to VirtualFace, and the physical organ’s hardware MIDI map remains unverified.</p>
+
+      <h3>Note + pitch bend</h3>
+      <p>This output format sends the nearest standard MIDI note with a pitch bend for the remaining offset. Set the receiving instrument’s bend range to match VirtualFace. The default is <strong>±2 semitones</strong>. For a key at ratio <code>r</code> relative to reference C, the target is <code>60 + 12 log₂(r)</code> in MIDI semitones. VirtualFace rounds to the nearest MIDI note and sends the fractional difference as pitch bend before Note On. <a href="https://midi.org/summary-of-midi-1-0-messages">MIDI 1.0 message reference</a></p>
+      <ul>
+        <li><strong>Multiple channels</strong> gives each held note its own channel so chords can contain separate bends. The receiving instrument or DAW must preserve those channel-specific bends. VirtualFace rotates through up to 15 channels, skipping channel 10.</li>
+        <li><strong>Single channel</strong> sends one held note at a time on the selected output channel.</li>
+      </ul>
+      <p>Use <strong>Release all notes</strong> in the MIDI panel to clear held notes and highlights.</p>
+    </section>
+
+    <section id="example" aria-labelledby="example-title">
+      <h2 id="example-title">Try a harmonic seventh chord</h2>
+      <p>In the Vogel layout, use the lower <code>c</code> as the reference and add <code>e⁻¹</code>, <code>g</code> and <code>b−</code> at the pitches below. Hover or focus the keys to check the frequency. With <strong>Sine</strong> enabled, you can play the chord with multitouch.</p>
+      <div class="guide-table">
+        <table>
+          <caption>Vogel layout with raw base channel 1</caption>
+          <thead><tr><th scope="col">Key</th><th scope="col">Ratio</th><th scope="col">Frequency</th><th scope="col">Raw channel / note</th><th scope="col">Tuned note / bend</th></tr></thead>
+          <tbody>
+            <tr><th scope="row"><code>c</code></th><td>1/1</td><td>261.63 Hz</td><td>1 / 44</td><td>60 / 0¢</td></tr>
+            <tr><th scope="row"><code>e⁻¹</code></th><td>5/4</td><td>327.03 Hz</td><td>1 / 84</td><td>64 / −13.69¢</td></tr>
+            <tr><th scope="row"><code>g</code></th><td>3/2</td><td>392.44 Hz</td><td>1 / 117</td><td>67 / +1.96¢</td></tr>
+            <tr><th scope="row"><code>b−</code></th><td>7/4</td><td>457.84 Hz</td><td>2 / 37</td><td>70 / −31.17¢</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>For the tuned output, each bend is measured from the standard pitch of the MIDI note in that row. The raw note numbers identify the keys, so they differ from the notes sent in tuned mode.</p>
+      <p><a class="control" href="./?layout=vogel">Open Vogel’s keyboard</a></p>
+    </section>
+  </main>
+</body>
+</html>
