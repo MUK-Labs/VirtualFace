@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#000000">
+  <meta name="description" content="Play the special manual of the Enharmonic Pipe Organ with touch, mouse, or MIDI.">
+  <title>VirtualFace · Enharmonic Pipe Organ</title>
+  <link rel="stylesheet" href="./styles.css">
+  <script type="module" src="./app.js"></script>
+</head>
+<body>
+  <div class="app">
+    <header class="toolbar">
+      <div class="instrument">
+        <div class="wordmark"><span class="wordmark-icon" aria-hidden="true"></span>VirtualFace</div>
+        <h1 id="instrument-name">Enharmonic Pipe Organ</h1>
+        <p class="instrument-detail">Special manual <span aria-hidden="true">·</span> Vogel’s 1968 drawing</p>
+      </div>
+      <div class="actions">
+        <button id="midi-button" class="control" type="button" aria-expanded="false" aria-controls="midi-panel">
+          <span id="midi-dot" class="midi-dot" aria-hidden="true"></span>MIDI
+        </button>
+        <button id="fullscreen" class="control" type="button"><span class="fullscreen-icon" aria-hidden="true"></span><span id="fullscreen-label">Fullscreen</span></button>
+      </div>
+      <section id="midi-panel" class="midi-panel" aria-labelledby="midi-heading" hidden>
+        <h2 id="midi-heading">MIDI connections</h2>
+        <p id="midi-status" role="status">Enable MIDI to connect a controller or a sound source.</p>
+        <button id="midi-enable" class="control control-accent" type="button">Enable MIDI</button>
+        <div id="midi-routing" class="midi-routing" hidden>
+          <label>Input device<select id="midi-input"></select></label>
+          <label>Input channel<select id="midi-input-channel"></select></label>
+          <label>Output device<select id="midi-output"></select></label>
+          <label>Output channel<select id="midi-output-channel"></select></label>
+        </div>
+        <p class="mapping-note" id="midi-mapping">VirtualFace uses its own note map. Focus or hover over a key to see its MIDI address.</p>
+        <button id="release-all" class="control" type="button">Release all notes</button>
+      </section>
+    </header>
+    <main class="stage" aria-label="Vogel special manual">
+      <div id="keyboard" class="keyboard" role="group" aria-label="Playable keys" aria-describedby="keyboard-help"></div>
+      <p id="keyboard-help" class="visually-hidden">Press and hold a key to play. Use the arrow keys to move focus and Space or Enter to play the focused key.</p>
+      <noscript>Enable JavaScript to play the keyboard.</noscript>
+    </main>
+    <footer class="footer">
+      <div class="legend" aria-label="Key legend">
+        <span><i class="legend-swatch legend-main" aria-hidden="true"></i>Main keys</span>
+        <span><i class="legend-swatch legend-septimal" aria-hidden="true"></i>Septimal keys</span>
+      </div>
+      <p id="key-info" class="key-info">Play by touch, mouse, or MIDI</p>
+      <a class="source-link" href="https://www.soyka-musik.at/media/content/downloads/u.-d._soyka_arbeitsbericht_sinfonie_in_yes-dur_die_unspielbare.pdf#page=5" target="_blank" rel="noopener">Vogel’s drawing</a>
+    </footer>
+  </div>
+</body>
+</html>
