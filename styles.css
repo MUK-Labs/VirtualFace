@@ -60,7 +60,6 @@ button { cursor: pointer; }
 }
 
 h1 { margin: .25rem 0 .15rem; font-size: clamp(1.1rem, 3vw, 1.8rem); font-weight: 560; letter-spacing: -.04em; line-height: 1.1; }
-.instrument-detail { margin: 0; font-size: .81rem; color: var(--muted); }
 .actions { display: flex; gap: .5rem; flex-shrink: 0; }
 
 .control {
@@ -224,7 +223,6 @@ h1 { margin: .25rem 0 .15rem; font-size: clamp(1.1rem, 3vw, 1.8rem); font-weight
 @media (max-width: 600px) {
   .app { padding-left: max(.65rem, env(safe-area-inset-left)); padding-right: max(.65rem, env(safe-area-inset-right)); }
   .toolbar { gap: .4rem; padding: .65rem 0; }
-  .instrument-detail { font-size: .72rem; }
   .actions { gap: .35rem; }
   .actions .control { min-width: 2.45rem; padding: 0 .5rem; }
   #fullscreen-label { position: absolute; width: 1px; height: 1px; clip-path: inset(50%); overflow: hidden; white-space: nowrap; }
@@ -236,7 +234,7 @@ h1 { margin: .25rem 0 .15rem; font-size: clamp(1.1rem, 3vw, 1.8rem); font-weight
 }
 @media (max-height: 520px) {
   .toolbar { padding-block: .3rem; }
-  .wordmark, .instrument-detail { display: none; }
+  .wordmark { display: none; }
   .footer { padding-block: .25rem; }
   .stage { padding-block: .25rem; }
 }
@@ -257,4 +255,37 @@ h1 { margin: .25rem 0 .15rem; font-size: clamp(1.1rem, 3vw, 1.8rem); font-weight
 
 @media (max-width: 600px) {
   .is-fullscreen .stage { padding-top: 3rem; }
+}
+
+.layout-choice {
+  display: inline-block;
+  max-width: 100%;
+  margin-top: .2rem;
+}
+.layout-choice select {
+  appearance: none;
+  width: 100%;
+  min-height: 1.65rem;
+  padding: 0 1.25rem 0 0;
+  border: 0;
+  background: linear-gradient(45deg, transparent 50%, #aaa 50%) right .35rem center / .25rem .25rem,
+    linear-gradient(135deg, #aaa 50%, transparent 50%) right .13rem center / .25rem .25rem #000;
+  background-repeat: no-repeat;
+  color: var(--muted);
+  font-size: .82rem;
+  cursor: pointer;
+  text-overflow: ellipsis;
+}
+.layout-choice select:hover { color: #fff; }
+.sine-dot { width: .5rem; height: .5rem; border-radius: 50%; background: #777973; }
+#sine-button[aria-pressed="true"] .sine-dot { background: var(--accent); }
+.midi-routing .routing-wide { grid-column: 1 / -1; }
+.midi-panel .midi-warning { color: #f7cb8f; }
+.is-fullscreen #sine-button { display: none; }
+
+@media (max-width: 600px) {
+  .layout-choice select { font-size: .74rem; }
+  .actions { gap: .25rem; }
+  .actions .control { min-width: 2rem; gap: .28rem; padding-inline: .35rem; }
+  .footer .legend { display: none; }
 }

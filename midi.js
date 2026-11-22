@@ -19,6 +19,7 @@ function isDataByte(byte) {
 export class WebMidi {
   #onNote;
   #onState;
+  #onOutputChange;
   #access = null;
   #status = "idle";
   #error = null;
@@ -30,9 +31,10 @@ export class WebMidi {
   #outputPort = null;
   #sentNotes = new Map();
 
-  constructor({ onNote = () => {}, onState = () => {} } = {}) {
+  constructor({ onNote = () => {}, onState = () => {}, onOutputChange = () => {} } = {}) {
     this.#onNote = onNote;
     this.#onState = onState;
+    this.#onOutputChange = onOutputChange;
   }
 
   async connect() {
@@ -121,6 +123,10 @@ export class WebMidi {
     return this.#send(message);
   }
 
+  sendMessage(message) {
+    return this.#send(message);
+  }
+
   panic() {
     this.#clearOutputNotes();
     for (const [port, notes] of this.#inputPorts) {
@@ -169,6 +175,7 @@ export class WebMidi {
     const output = outputs.get(this.#outputId);
     const activeOutput = output?.state === "connected" ? output : null;
     if (this.#outputPort !== activeOutput) {
+      this.#onOutputChange();
       this.#clearOutputNotes();
       this.#outputPort = activeOutput;
     }

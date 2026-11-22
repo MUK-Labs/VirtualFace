@@ -1,7 +1,13 @@
+import { stammLayout } from "./layouts/stamm.js";
 import { vogelLayout } from "./layouts/vogel.js";
 import { WebMidi } from "./midi.js";
+import { TunedMidi } from "./tuned-midi.js";
+import { SineSynth } from "./sine.js";
 
 const app = document.querySelector(".app");
+const layoutSelect = document.querySelector("#layout-select");
+const sineButton = document.querySelector("#sine-button");
+const sourceLink = document.querySelector(".source-link");
 const keyboard = document.querySelector("#keyboard");
 const stage = document.querySelector(".stage");
 const panel = document.querySelector("#midi-panel");
@@ -14,18 +20,28 @@ const inputDevice = document.querySelector("#midi-input");
 const inputChannel = document.querySelector("#midi-input-channel");
 const outputDevice = document.querySelector("#midi-output");
 const outputChannel = document.querySelector("#midi-output-channel");
+const outputFormat = document.querySelector("#midi-output-format");
+const voiceRouting = document.querySelector("#midi-voice-routing");
+const bendRange = document.querySelector("#midi-bend-range");
+const tunedOptions = document.querySelectorAll(".tuned-option");
+const midiMapping = document.querySelector("#midi-mapping");
+const midiWarning = document.querySelector("#midi-warning");
 const fullscreen = document.querySelector("#fullscreen");
 const fullscreenLabel = document.querySelector("#fullscreen-label");
 const keyInfo = document.querySelector("#key-info");
 
-const { keys, width, height } = vogelLayout;
+const layouts = new Map([stammLayout, vogelLayout].map((layout) => [layout.id, layout]));
+const middleC = 440 * 2 ** ((60 - 69) / 12);
+const keysById = new Map();
+let layout;
 const buttons = new Map();
 const keysByAddress = new Map();
 const localSources = new Map();
 const localCounts = new Map();
 const inboundSources = new Map();
 const defaultHint = keyInfo.textContent;
-const banks = Math.max(...keys.map(channelOffset)) + 1;
+let banks = 1;
+let outputConnected = false;
 let inspectedKey = null;
 
 function channelOffset(key) {
@@ -53,21 +69,23 @@ const none = { id: "none", name: "None" };
 const all = { id: "all", name: "All devices" };
 const anyChannel = { id: "any", name: "Any channel" };
 
-setOptions(inputChannel, banks === 1 ? [anyChannel, ...channels] : channels, banks === 1 ? anyChannel.id : "1");
 setOptions(outputChannel, channels, "1");
-if (banks > 1) {
-  document.querySelector("#midi-mapping").textContent =
-    `VirtualFace uses ${banks} consecutive MIDI channels from the selected channel. Focus or hover over a key to see its MIDI address.`;
-  inputChannel.labels[0].firstChild.textContent = "Input base channel";
-  outputChannel.labels[0].firstChild.textContent = "Output base channel";
+
+function tunedOutput() {
+  return outputFormat.value === "tuned";
+}
+
+function pitchFor(key) {
+  return 60 + 12 * Math.log2(key.ratio);
 }
 
 function noteAddress(key) {
-  const out = channelFor(key, Number(outputChannel.value));
   const input = inputChannel.value === anyChannel.id
     ? "any channel"
     : `ch. ${channelFor(key, Number(inputChannel.value))}`;
-  return `MIDI ${key.midiNote} · in ${input} · out ch. ${out}`;
+  const rawOutput = `out ch. ${channelFor(key, Number(outputChannel.value))}`;
+  const output = tunedOutput() ? "tuned out" : rawOutput;
+  return `${(key.ratio * middleC).toFixed(2)} Hz · raw MIDI ${key.midiNote} · in ${input} · ${output}`;
 }
 
 function showKey(key) {
@@ -83,6 +101,7 @@ function refreshKeyAddresses() {
 function refreshKey(key) {
   const active = localCounts.has(key) || inboundSources.has(key);
   const button = buttons.get(key);
+  if (!button) return;
   button.classList.toggle("is-active", active);
   button.setAttribute("aria-pressed", String(active));
 }
@@ -123,32 +142,87 @@ function renderMidi(state) {
   setOptions(inputDevice, [all, none, ...state.inputs], state.inputId);
   setOptions(outputDevice, [none, ...state.outputs], state.outputId);
   outputChannel.value = String(state.outputChannel);
-  outputChannel.disabled = state.outputId === none.id;
+  outputConnected = connected && state.outputId !== none.id;
+  outputChannel.disabled = !outputConnected;
   inputChannel.disabled = state.inputId === none.id;
   refreshKeyAddresses();
 }
 
-const midi = new WebMidi({ onNote: routeInput, onState: renderMidi });
-enableMidi.addEventListener("click", () => midi.connect());
-inputDevice.addEventListener("change", () => {
-  const selection = inputChannel.value;
-  midi.setInput(inputDevice.value, banks === 1 && selection !== anyChannel.id ? Number(selection) : null);
+function showMidiWarning(message = "") {
+  midiWarning.textContent = message;
+  midiWarning.hidden = !message;
+  if (panel.hidden && message) keyInfo.textContent = message;
+}
+
+const sine = new SineSynth();
+let sineEnabled = sine.supported;
+sineButton.hidden = !sine.supported;
+sineButton.addEventListener("click", () => {
+  sineEnabled = !sineEnabled;
+  sine.setEnabled(sineEnabled);
+  sineButton.setAttribute("aria-pressed", String(sineEnabled));
+  if (sineEnabled) sine.unlock();
 });
-inputChannel.addEventListener("change", () => {
-  // Remove all highlights from the old routing before reading the new channel.
-  const affectedKeys = [...inboundSources.keys()];
-  inboundSources.clear();
-  affectedKeys.forEach(refreshKey);
+const midi = new WebMidi({
+  onNote: routeInput,
+  onState: renderMidi,
+  onOutputChange: () => tunedMidi.panic(),
+});
+const tunedMidi = new TunedMidi({
+  send: (message) => midi.sendMessage(message),
+  onVoiceLimit: () => showMidiWarning(voiceRouting.value === "single"
+    ? "Single-channel output can hold one tuned note at a time."
+    : "All tuned MIDI channels are in use."),
+});
+enableMidi.addEventListener("click", () => midi.connect());
+
+function updateInput() {
+  // The Web MIDI port filter is fixed only when the layout fits on one channel.
   const selection = inputChannel.value;
-  midi.setInput(inputDevice.value, banks === 1 && selection !== anyChannel.id ? Number(selection) : null);
+  midi.setInput(inputDevice.value || all.id, banks === 1 && selection !== anyChannel.id ? Number(selection) : null);
+}
+
+inputDevice.addEventListener("change", updateInput);
+inputChannel.addEventListener("change", () => {
+  clearInputHighlights();
+  updateInput();
   refreshKeyAddresses();
 });
-function updateOutput() {
-  releaseLocalNotes();
-  midi.setOutput(outputDevice.value, Number(outputChannel.value));
+
+function refreshMidiMapping() {
+  const tuned = tunedOutput();
+  for (const option of tunedOptions) option.hidden = !tuned;
+  const inputMap = `Raw key addresses use ${banks} consecutive MIDI channel${banks === 1 ? "" : "s"} starting at the selected channel.`;
+  const tuning = voiceRouting.value === "single"
+    ? "Single-channel output is monophonic."
+    : "Polyphonic output assigns each held note its own channel, skipping channel 10.";
+  midiMapping.textContent = tuned
+    ? `${tuning} Match the receiving instrument’s bend range. Input still uses raw key addresses.`
+    : `${inputMap} Hover over or focus a key to see its address.`;
+  outputChannel.labels[0].firstChild.textContent = tuned && voiceRouting.value === "single"
+    ? "Output channel"
+    : "Output base channel";
 }
-outputDevice.addEventListener("change", updateOutput);
-outputChannel.addEventListener("change", updateOutput);
+
+function updateOutput() {
+  const device = outputDevice.value;
+  const baseChannel = Number(outputChannel.value);
+  releaseLocalNotes();
+  activePointers.clear();
+  tunedMidi.panic();
+  showMidiWarning();
+  midi.setOutput(device, baseChannel);
+  tunedMidi.configure({
+    baseChannel,
+    bendRange: Number(bendRange.value),
+    singleChannel: voiceRouting.value === "single",
+  });
+  refreshMidiMapping();
+  refreshKeyAddresses();
+}
+for (const control of [outputDevice, outputChannel, outputFormat, voiceRouting, bendRange]) {
+  control.addEventListener("change", updateOutput);
+}
 
 function play(source, key, velocity = 100) {
   if (localSources.get(source) === key) return;
@@ -157,9 +231,13 @@ function play(source, key, velocity = 100) {
   const count = localCounts.get(key) ?? 0;
   localSources.set(source, key);
   localCounts.set(key, count + 1);
-  if (count === 0) midi.press(key.midiNote, velocity, channelOffset(key));
   refreshKey(key);
   showKey(key);
+  if (count === 0) {
+    sine.press(key.id, key.ratio * middleC, velocity);
+    if (outputConnected && tunedOutput()) tunedMidi.press(key.id, pitchFor(key), velocity);
+    else midi.press(key.midiNote, velocity, channelOffset(key));
+  }
 }
 
 function stop(source) {
@@ -171,6 +249,8 @@ function stop(source) {
     localCounts.set(key, count);
   } else {
     localCounts.delete(key);
+    sine.release(key.id);
+    tunedMidi.release(key.id);
     midi.release(key.midiNote, channelOffset(key));
   }
   refreshKey(key);
@@ -180,13 +260,23 @@ function releaseLocalNotes() {
   for (const source of localSources.keys()) stop(source);
 }
 
-document.querySelector("#release-all").addEventListener("click", () => {
-  releaseLocalNotes();
-  midi.panic();
+function clearInputHighlights() {
   const affectedKeys = [...inboundSources.keys()];
   inboundSources.clear();
   affectedKeys.forEach(refreshKey);
-});
+}
+
+function releaseAllNotes() {
+  releaseLocalNotes();
+  activePointers.clear();
+  sine.panic();
+  tunedMidi.panic();
+  midi.panic();
+  clearInputHighlights();
+  showMidiWarning();
+}
+document.querySelector("#release-all").addEventListener("click", releaseAllNotes);
+
 window.addEventListener("blur", releaseLocalNotes);
 window.addEventListener("pagehide", releaseLocalNotes);
 document.addEventListener("visibilitychange", () => {
@@ -250,33 +340,69 @@ function buttonLabel(label) {
   return wrapper;
 }
 
-const keysById = new Map(keys.map((key) => [key.id, key]));
-const fragment = document.createDocumentFragment();
-for (const key of keys) {
-  const button = document.createElement("button");
-  button.type = "button";
-  button.className = "key";
-  button.dataset.key = key.id;
-  button.dataset.shape = key.shape;
-  button.dataset.kind = key.kind;
-  button.dataset.midiNote = key.midiNote;
-  button.dataset.channelOffset = channelOffset(key);
-  button.setAttribute("aria-label", key.label);
-  button.setAttribute("aria-pressed", "false");
-  button.tabIndex = buttons.size === 0 ? 0 : -1;
-  button.append(buttonLabel(key.label));
-  button.style.left = `${100 * key.x / width}%`;
-  button.style.top = `${100 * key.y / height}%`;
-  button.style.width = `${100 * key.width / width}%`;
-  button.style.height = `${100 * key.height / height}%`;
-  buttons.set(key, button);
-  keysByAddress.set(address(channelOffset(key), key.midiNote), key);
-  fragment.append(button);
+function drawKeyboard() {
+  const { keys, width, height } = layout;
+  keysById.clear();
+  keysByAddress.clear();
+  buttons.clear();
+  const fragment = document.createDocumentFragment();
+  for (const key of keys) {
+    keysById.set(key.id, key);
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "key";
+    button.dataset.key = key.id;
+    button.dataset.shape = key.shape;
+    button.dataset.kind = key.kind;
+    button.dataset.midiNote = key.midiNote;
+    button.dataset.channelOffset = channelOffset(key);
+    button.setAttribute("aria-label", key.label);
+    button.setAttribute("aria-pressed", "false");
+    button.tabIndex = buttons.size === 0 ? 0 : -1;
+    button.append(buttonLabel(key.label));
+    button.style.left = `${100 * key.x / width}%`;
+    button.style.top = `${100 * key.y / height}%`;
+    button.style.width = `${100 * key.width / width}%`;
+    button.style.height = `${100 * key.height / height}%`;
+    buttons.set(key, button);
+    keysByAddress.set(address(channelOffset(key), key.midiNote), key);
+    fragment.append(button);
+  }
+  keyboard.replaceChildren(fragment);
 }
-keyboard.append(fragment);
-refreshKeyAddresses();
+
+function setLayout(id, updateUrl = false) {
+  const selected = layouts.get(id) ?? stammLayout;
+  if (layout === selected) return;
+  releaseAllNotes();
+  layout = selected;
+  layoutSelect.value = layout.id;
+  stage.setAttribute("aria-label", layout.name);
+  const previousChannel = inputChannel.value;
+  banks = Math.max(...layout.keys.map(channelOffset)) + 1;
+  setOptions(inputChannel, banks === 1 ? [anyChannel, ...channels] : channels,
+    previousChannel !== anyChannel.id && Number(previousChannel) ? previousChannel : banks === 1 ? anyChannel.id : "1");
+  inputChannel.labels[0].firstChild.textContent = banks > 1 ? "Input base channel" : "Input channel";
+  sourceLink.href = layout.sourceUrl;
+  sourceLink.textContent = layout === stammLayout ? "Stamm’s console" : "Vogel’s drawing";
+  showKey(null);
+  drawKeyboard();
+  updateInput();
+  refreshKeyAddresses();
+  refreshMidiMapping();
+  fitKeyboard();
+
+  if (updateUrl) {
+    const url = new URL(window.location.href);
+    if (layout === stammLayout) url.searchParams.delete("layout");
+    else url.searchParams.set("layout", layout.id);
+    history.replaceState(history.state, "", url);
+  }
+}
 
 function fitKeyboard() {
+  if (!layout) return;
+  const { width, height } = layout;
   const style = getComputedStyle(stage);
   const availableHeight = stage.clientHeight - parseFloat(style.paddingTop) - parseFloat(style.paddingBottom);
   const scale = Math.max(0, Math.min(stage.clientWidth / width, availableHeight / height));
@@ -291,8 +417,6 @@ function fitKeyboard() {
     button.style.fontSize = `${Math.max(5.5, Math.min(20, targetSize, availableWidth / textWidth))}px`;
   }
 }
-new ResizeObserver(fitKeyboard).observe(stage);
-fitKeyboard();
 
 function keyAt(element) {
   return keysById.get(element?.closest(".key")?.dataset.key);
@@ -312,6 +436,9 @@ keyboard.addEventListener("pointermove", (event) => {
   play(`pointer:${event.pointerId}`, keyAt(document.elementFromPoint(event.clientX, event.clientY)));
 });
 function endPointer(event) {
+  if (event.type === "pointerup" && event.pointerType !== "mouse" && activePointers.has(event.pointerId)) {
+    sine.unlock();
+  }
   activePointers.delete(event.pointerId);
   stop(`pointer:${event.pointerId}`);
 }
@@ -333,7 +460,7 @@ function nearestKey(key, [horizontal, vertical]) {
   let distance = Infinity;
   const x = key.x + key.width / 2;
   const y = key.y + key.height / 2;
-  for (const candidate of keys) {
+  for (const candidate of layout.keys) {
     const dx = candidate.x + candidate.width / 2 - x;
     const dy = candidate.y + candidate.height / 2 - y;
     const along = dx * horizontal + dy * vertical;
@@ -367,3 +494,7 @@ keyboard.addEventListener("keyup", (event) => {
   event.preventDefault();
   stop("keyboard");
 });
+
+layoutSelect.addEventListener("change", () => setLayout(layoutSelect.value, true));
+setLayout(new URLSearchParams(location.search).get("layout"));
+new ResizeObserver(fitKeyboard).observe(stage);

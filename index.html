@@ -15,9 +15,18 @@
       <div class="instrument">
         <div class="wordmark"><span class="wordmark-icon" aria-hidden="true"></span>VirtualFace</div>
         <h1 id="instrument-name">Enharmonic Pipe Organ</h1>
-        <p class="instrument-detail">Special manual <span aria-hidden="true">·</span> Vogel’s 1968 drawing</p>
+        <label class="layout-choice">
+          <span class="visually-hidden">Keyboard layout</span>
+          <select id="layout-select" aria-label="Keyboard layout">
+            <option value="stamm">Stamm’s built manual</option>
+            <option value="vogel">Vogel’s 1968 drawing</option>
+          </select>
+        </label>
       </div>
       <div class="actions">
+        <button id="sine-button" class="control" type="button" aria-pressed="true">
+          <span class="sine-dot" aria-hidden="true"></span>Sine
+        </button>
         <button id="midi-button" class="control" type="button" aria-expanded="false" aria-controls="midi-panel">
           <span id="midi-dot" class="midi-dot" aria-hidden="true"></span>MIDI
         </button>
@@ -32,12 +41,28 @@
           <label>Input channel<select id="midi-input-channel"></select></label>
           <label>Output device<select id="midi-output"></select></label>
           <label>Output channel<select id="midi-output-channel"></select></label>
+          <label class="routing-wide">Output format<select id="midi-output-format">
+            <option value="raw">Raw key addresses</option>
+            <option value="tuned">Note + pitch bend</option>
+          </select></label>
+          <label class="tuned-option" hidden>Voice routing<select id="midi-voice-routing">
+            <option value="poly">Multiple channels</option>
+            <option value="single">Single channel</option>
+          </select></label>
+          <label class="tuned-option" hidden>Bend range<select id="midi-bend-range">
+            <option value="1">±1 semitone</option>
+            <option value="2" selected>±2 semitones</option>
+            <option value="12">±12 semitones</option>
+            <option value="24">±24 semitones</option>
+            <option value="48">±48 semitones</option>
+          </select></label>
         </div>
         <p class="mapping-note" id="midi-mapping">VirtualFace uses its own note map. Focus or hover over a key to see its MIDI address.</p>
+        <p id="midi-warning" class="midi-warning" role="status" hidden></p>
         <button id="release-all" class="control" type="button">Release all notes</button>
       </section>
     </header>
-    <main class="stage" aria-label="Vogel special manual">
+    <main class="stage" aria-label="Special manual">
       <div id="keyboard" class="keyboard" role="group" aria-label="Playable keys" aria-describedby="keyboard-help"></div>
       <p id="keyboard-help" class="visually-hidden">Press and hold a key to play. Use the arrow keys to move focus and Space or Enter to play the focused key.</p>
       <noscript>Enable JavaScript to play the keyboard.</noscript>
