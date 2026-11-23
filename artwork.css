@@ -1,0 +1,67 @@
+.keyboard.has-artwork {
+  isolation: isolate;
+  overflow: hidden;
+  background: #000;
+}
+
+.artwork-lighting,
+.artwork-painting,
+.artwork-outlines {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.artwork-painting {
+  object-fit: fill;
+}
+
+.artwork-beam {
+  opacity: 0;
+  transition: opacity 150ms ease-out;
+}
+
+.artwork-beam.is-lit {
+  opacity: 1;
+  transition-duration: 35ms;
+}
+
+.artwork-focus {
+  visibility: hidden;
+  fill: none;
+  stroke: #fff;
+  stroke-width: 2px;
+  stroke-linejoin: round;
+  filter: drop-shadow(0 0 2px #000) drop-shadow(0 0 3px #000);
+}
+
+.artwork-focus.is-visible {
+  visibility: visible;
+}
+
+.keyboard.has-artwork > .key {
+  z-index: 1;
+  border: 0;
+  padding: 0;
+  border-radius: 0;
+  background: transparent;
+  color: transparent;
+  box-shadow: none;
+  filter: none;
+  outline: none;
+}
+
+@media (hover: hover) {
+  .keyboard.has-artwork > .key:not(.is-active):hover {
+    background: rgb(255 255 255 / 8%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .artwork-beam,
+  .artwork-beam.is-lit {
+    transition: none;
+  }
+}

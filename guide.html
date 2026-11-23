@@ -113,7 +113,7 @@
     <section id="custom-layouts" aria-labelledby="custom-layouts-title">
       <h2 id="custom-layouts-title">Open your own controller</h2>
       <p>Choose <strong>Open controller…</strong> from the layout menu. Opening a file from your device keeps the data in this tab’s memory. The imported controller stays in the menu until you open another file, reload, or close the tab. <a href="./examples/controller.json" download>Download an example JSON file</a>.</p>
-      <p>To use <strong>Open link</strong>, paste a direct HTTPS URL to the JSON. The browser reads it from its host. For an external host, it must allow reads from VirtualFace (CORS). Use a file from your device for downloads that require a login session.</p>
+      <p>To use <strong>Open link</strong>, paste a direct HTTPS URL to the JSON. The host must allow browser reads from VirtualFace (CORS). For JSON files in Google Drive, download the file and open it from your device.</p>
       <h3>JSON format</h3>
       <ul>
         <li>Set <code>version</code> to <code>1</code> and give the controller a <code>name</code>, <code>width</code>, and <code>height</code>. Use the same units for the layout and its keys.</li>
@@ -121,6 +121,13 @@
         <li>Set each key’s <code>midiNote</code> (0–127) and, for a layout using multiple channels, its <code>channelOffset</code> (0–15, default 0). Offset 0 uses the selected base channel. Each note and offset pair must be unique.</li>
         <li>Set an optional numeric <code>ratio</code> for the sine tone and tuned MIDI output. The ratio is relative to middle C at about 261.63 Hz. For example, <code>1.25</code> plays a pure major third above C. If omitted, the pitch follows the equal-tempered MIDI note.</li>
       </ul>
+      <h3>Artwork and polygon regions</h3>
+      <p>Use <code>version</code> <code>2</code> for polygon keys or artwork. Give each polygon <code>shape</code> <code>"polygon"</code> and a <code>points</code> array of <code>[x, y]</code> pairs in layout coordinates, starting from the upper-left corner. The points trace the edge in order. Each region uses the same MIDI fields as other keys.</p>
+      <p>Set <code>artwork</code> to the image filename, such as <code>"painting.png"</code>. Use the image width and height for the layout and trace the points on that coordinate grid. Select both files together for local playback. For hosted files, use an image path relative to the JSON, a direct HTTPS image URL, or a public Google Drive file link. The optional <strong>Artwork link</strong> field overrides the JSON reference.</p>
+      <p>Transparent parts of a PNG or WebP let the white light underneath show through. Incoming MIDI Note On and Note Off light and release the matching region. Press a region on the canvas to send MIDI from the selected output.</p>
+      <h3>Share a linked controller</h3>
+      <p>Add <code>?controller=</code> followed by the URL-encoded JSON link to the VirtualFace address. If the image has its own link, add <code>&amp;artwork=</code> followed by the URL-encoded image link. The layout opens automatically.</p>
+      <p>A link can also carry a copy of the layout after <code>#controller=</code>, as UTF-8 JSON compressed with gzip and encoded as base64url. The browser reads this snapshot from the link itself. The separately linked artwork still loads from its host. To share changes to the layout, generate a new snapshot link.</p>
     </section>
   </main>
 </body>

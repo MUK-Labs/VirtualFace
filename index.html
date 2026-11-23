@@ -7,6 +7,7 @@
   <meta name="description" content="Play the special manual of the Enharmonic Pipe Organ with touch, mouse, or MIDI.">
   <title>VirtualFace · Enharmonic Pipe Organ</title>
   <link rel="stylesheet" href="./styles.css">
+  <link rel="stylesheet" href="./artwork.css">
   <script type="module" src="./app.js"></script>
 </head>
 <body>
@@ -85,13 +86,15 @@
   </div>
   <dialog id="controller-dialog" class="controller-dialog" aria-labelledby="controller-heading">
     <h2 id="controller-heading">Open a controller layout</h2>
-    <p>Open a JSON file from your device to read it in this tab.</p>
-    <label for="controller-file">JSON file</label>
-    <input id="controller-file" type="file" accept=".json,application/json" autofocus>
+    <p>Files from your device stay in this tab. For a layout with artwork, select the JSON and image together.</p>
+    <label for="controller-file">Controller files</label>
+    <input id="controller-file" type="file" accept=".json,.png,.jpg,.jpeg,.webp,application/json,image/png,image/jpeg,image/webp" multiple autofocus>
     <form id="controller-link">
-      <label for="controller-url">Or enter a direct HTTPS link</label>
+      <label for="controller-url">Controller JSON link</label>
+      <input id="controller-url" type="url" autocomplete="off" autocapitalize="none" spellcheck="false" required>
+      <label for="controller-artwork-url">Artwork link (optional)</label>
+      <input id="controller-artwork-url" type="url" autocomplete="off" autocapitalize="none" spellcheck="false">
       <div class="controller-link-actions">
-        <input id="controller-url" type="url" autocomplete="off" autocapitalize="none" spellcheck="false" required>
         <button class="control" type="submit">Open link</button>
       </div>
     </form>

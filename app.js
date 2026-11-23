@@ -1,6 +1,7 @@
 import { stammLayout } from "./layouts/stamm.js";
 import { vogelLayout } from "./layouts/vogel.js";
-import { readControllerFile, readControllerUrl } from "./layouts/import.js";
+import { readControllerFile, readControllerSnapshot, readControllerUrl } from "./layouts/import.js";
+import { renderArtwork, setArtworkActive } from "./layouts/artwork.js";
 import { WebMidi } from "./midi.js";
 import { TunedMidi } from "./tuned-midi.js";
 import { SineSynth } from "./sine.js";
@@ -95,7 +96,8 @@ function noteAddress(key) {
 
 function showKey(key) {
   inspectedKey = key;
-  keyInfo.textContent = key ? `${key.label} · ${noteAddress(key)}` : defaultHint;
+  const hint = layout?.artworkUrl ? "Press a painted region to light it" : defaultHint;
+  keyInfo.textContent = key ? `${key.label} · ${noteAddress(key)}` : hint;
 }
 
 function refreshKeyAddresses() {
@@ -109,6 +111,7 @@ function refreshKey(key) {
   if (!button) return;
   button.classList.toggle("is-active", active);
   button.setAttribute("aria-pressed", String(active));
+  setArtworkActive(button, active);
 }
 
 function routeInput({ note, on, channel, source }) {
@@ -370,12 +373,18 @@ function drawKeyboard() {
     button.style.top = `${100 * key.y / height}%`;
     button.style.width = `${100 * key.width / width}%`;
     button.style.height = `${100 * key.height / height}%`;
+    if (key.shape === "polygon") {
+      const points = key.points.map(([x, y]) =>
+        `${100 * (x - key.x) / key.width}% ${100 * (y - key.y) / key.height}%`);
+      button.style.clipPath = `polygon(${points.join(", ")})`;
+    }
     buttons.set(key, button);
     keysByAddress.set(address(channelOffset(key), key.midiNote), key);
     fragment.append(button);
   }
   keyboard.dataset.layout = layout.id;
   keyboard.replaceChildren(fragment);
+  renderArtwork(keyboard, layout);
 }
 
 function setLayout(id, updateUrl = false) {
@@ -513,9 +522,21 @@ keyboard.addEventListener("keyup", (event) => {
 const controllerDialog = document.querySelector("#controller-dialog");
 const controllerFile = document.querySelector("#controller-file");
 const controllerUrl = document.querySelector("#controller-url");
+const controllerArtworkUrl = document.querySelector("#controller-artwork-url");
 const controllerStatus = document.querySelector("#controller-status");
 const openControllerOption = layoutSelect.querySelector('[value="open-controller"]');
 let importRequest = null;
+
+function installImportedController(definition) {
+  const previous = layouts.get(importedLayoutId);
+  layouts.set(importedLayoutId, { ...definition, id: importedLayoutId });
+  const option = new Option(definition.name, importedLayoutId);
+  const previousOption = layoutSelect.querySelector(`[value="${importedLayoutId}"]`);
+  if (previousOption) previousOption.replaceWith(option);
+  else layoutSelect.add(option, openControllerOption);
+  setLayout(importedLayoutId);
+  if (previous?.artworkUrl) URL.revokeObjectURL(previous.artworkUrl);
+}
 
 async function importController(read) {
   importRequest?.abort();
@@ -524,20 +545,23 @@ async function importController(read) {
   controllerStatus.textContent = "Opening controller…";
   try {
     const definition = await read(request.signal);
-    if (importRequest !== request || !controllerDialog.open) return;
-
-    layouts.set(importedLayoutId, { ...definition, id: importedLayoutId });
-    const option = new Option(definition.name, importedLayoutId);
-    const previousOption = layoutSelect.querySelector(`[value="${importedLayoutId}"]`);
-    if (previousOption) previousOption.replaceWith(option);
-    else layoutSelect.add(option, openControllerOption);
-    setLayout(importedLayoutId);
+    if (importRequest !== request || !controllerDialog.open) {
+      if (definition.artworkUrl) URL.revokeObjectURL(definition.artworkUrl);
+      return;
+    }
+    installImportedController(definition);
     controllerDialog.close();
   } catch (error) {
     if (importRequest === request && controllerDialog.open) controllerStatus.textContent = error.message;
   } finally {
     if (importRequest === request) importRequest = null;
   }
+}
+
+function openControllerLink() {
+  const source = controllerUrl.value.trim();
+  const artwork = controllerArtworkUrl?.value.trim() || undefined;
+  return importController((signal) => readControllerUrl(source, signal, artwork));
 }
 
 layoutSelect.addEventListener("change", () => {
@@ -550,21 +574,46 @@ layoutSelect.addEventListener("change", () => {
   }
 });
 controllerFile?.addEventListener("change", () => {
-  const [file] = controllerFile.files;
+  const files = Array.from(controllerFile.files);
   controllerFile.value = "";
-  if (file) importController(() => readControllerFile(file));
+  if (!files.length) return;
+  const jsonFiles = files.filter((file) => /\.json$/i.test(file.name) || file.type === "application/json");
+  if (jsonFiles.length !== 1 || files.length > 2) {
+    importRequest?.abort();
+    importRequest = null;
+    controllerStatus.textContent = "Select one JSON file and its image if the layout uses artwork.";
+    return;
+  }
+  const [file] = jsonFiles;
+  const imageFile = files.find((candidate) => candidate !== file);
+  importController((signal) => readControllerFile(file, imageFile, signal));
 });
 document.querySelector("#controller-link")?.addEventListener("submit", (event) => {
   event.preventDefault();
-  importController((signal) => readControllerUrl(controllerUrl.value, signal));
+  openControllerLink();
 });
 document.querySelector("#controller-close")?.addEventListener("click", () => controllerDialog.close());
 controllerDialog?.addEventListener("close", () => {
   importRequest?.abort();
   importRequest = null;
   controllerUrl.value = "";
+  if (controllerArtworkUrl) controllerArtworkUrl.value = "";
   controllerStatus.textContent = "";
 });
 
-setLayout(new URLSearchParams(location.search).get("layout"));
+const startupParams = new URLSearchParams(location.search);
+setLayout(startupParams.get("layout"));
 new ResizeObserver(fitKeyboard).observe(stage);
+const linkedController = startupParams.get("controller");
+const controllerSnapshot = new URLSearchParams(location.hash.slice(1)).get("controller");
+if (controllerDialog && (linkedController || controllerSnapshot)) {
+  controllerUrl.value = linkedController ?? "";
+  const artwork = startupParams.get("artwork")?.trim() || undefined;
+  if (controllerArtworkUrl) controllerArtworkUrl.value = artwork ?? "";
+  controllerDialog.showModal();
+  if (controllerSnapshot) {
+    importController((signal) => readControllerSnapshot(controllerSnapshot, artwork, signal));
+  } else {
+    openControllerLink();
+  }
+}
