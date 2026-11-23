@@ -23,6 +23,7 @@
       <a href="#tuning">Tuning and notation</a>
       <a href="#midi">MIDI setup</a>
       <a href="#example">Worked example</a>
+      <a href="#custom-layouts">Custom controllers</a>
     </nav>
 
     <section id="layouts" aria-labelledby="layouts-title">
@@ -107,6 +108,19 @@
       </div>
       <p>For the tuned output, each bend is measured from the standard pitch of the MIDI note in that row. The raw note numbers identify the keys, so they differ from the notes sent in tuned mode.</p>
       <p><a class="control" href="./?layout=vogel">Open Vogel’s keyboard</a></p>
+    </section>
+
+    <section id="custom-layouts" aria-labelledby="custom-layouts-title">
+      <h2 id="custom-layouts-title">Open your own controller</h2>
+      <p>Choose <strong>Open controller…</strong> from the layout menu. Opening a file from your device keeps the data in this tab’s memory. The imported controller stays in the menu until you open another file, reload, or close the tab. <a href="./examples/controller.json" download>Download an example JSON file</a>.</p>
+      <p>To use <strong>Open link</strong>, paste a direct HTTPS URL to the JSON. The browser reads it from its host. For an external host, it must allow reads from VirtualFace (CORS). Use a file from your device for downloads that require a login session.</p>
+      <h3>JSON format</h3>
+      <ul>
+        <li>Set <code>version</code> to <code>1</code> and give the controller a <code>name</code>, <code>width</code>, and <code>height</code>. Use the same units for the layout and its keys.</li>
+        <li>In the <code>keys</code> array, give each key a <code>label</code>, <code>x</code>, <code>y</code>, <code>width</code>, and <code>height</code>. Positions start at the upper-left corner. Keys may use <code>shape</code> <code>rect</code> (default) or <code>circle</code>. Optional finishes are <code>ivory</code>, <code>ebony</code>, <code>mahogany</code>, <code>walnut</code>, and <code>boxwood</code>.</li>
+        <li>Set each key’s <code>midiNote</code> (0–127) and, for a layout using multiple channels, its <code>channelOffset</code> (0–15, default 0). Offset 0 uses the selected base channel. Each note and offset pair must be unique.</li>
+        <li>Set an optional numeric <code>ratio</code> for the sine tone and tuned MIDI output. The ratio is relative to middle C at about 261.63 Hz. For example, <code>1.25</code> plays a pure major third above C. If omitted, the pitch follows the equal-tempered MIDI note.</li>
+      </ul>
     </section>
   </main>
 </body>

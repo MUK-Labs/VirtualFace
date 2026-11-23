@@ -20,6 +20,7 @@
           <select id="layout-select" aria-label="Keyboard layout">
             <option value="stamm">Stamm’s built manual</option>
             <option value="vogel">Vogel’s 1968 drawing</option>
+            <option value="open-controller">Open controller…</option>
           </select>
         </label>
       </div>
@@ -82,5 +83,23 @@
       </div>
     </footer>
   </div>
+  <dialog id="controller-dialog" class="controller-dialog" aria-labelledby="controller-heading">
+    <h2 id="controller-heading">Open a controller layout</h2>
+    <p>Open a JSON file from your device to read it in this tab.</p>
+    <label for="controller-file">JSON file</label>
+    <input id="controller-file" type="file" accept=".json,application/json" autofocus>
+    <form id="controller-link">
+      <label for="controller-url">Or enter a direct HTTPS link</label>
+      <div class="controller-link-actions">
+        <input id="controller-url" type="url" autocomplete="off" autocapitalize="none" spellcheck="false" required>
+        <button class="control" type="submit">Open link</button>
+      </div>
+    </form>
+    <p id="controller-status" role="status"></p>
+    <div class="controller-dialog-actions">
+      <a class="guide-link" href="./guide.html#custom-layouts" target="_blank" rel="noopener">JSON format and example</a>
+      <button id="controller-close" class="control" type="button">Close</button>
+    </div>
+  </dialog>
 </body>
 </html>

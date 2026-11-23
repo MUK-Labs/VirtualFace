@@ -1,0 +1,47 @@
+{
+  "version": 1,
+  "name": "Four-pad example",
+  "width": 220,
+  "height": 220,
+  "keys": [
+    {
+      "label": "C",
+      "x": 10,
+      "y": 10,
+      "width": 90,
+      "height": 90,
+      "midiNote": 60,
+      "finish": "ivory"
+    },
+    {
+      "label": "E",
+      "x": 120,
+      "y": 10,
+      "width": 90,
+      "height": 90,
+      "midiNote": 64,
+      "ratio": 1.25,
+      "finish": "walnut"
+    },
+    {
+      "label": "G",
+      "x": 10,
+      "y": 120,
+      "width": 90,
+      "height": 90,
+      "midiNote": 67,
+      "ratio": 1.5,
+      "finish": "walnut"
+    },
+    {
+      "label": "B♭",
+      "x": 120,
+      "y": 120,
+      "width": 90,
+      "height": 90,
+      "midiNote": 70,
+      "ratio": 1.75,
+      "shape": "circle"
+    }
+  ]
+}

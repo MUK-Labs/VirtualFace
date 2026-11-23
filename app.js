@@ -1,11 +1,14 @@
 import { stammLayout } from "./layouts/stamm.js";
 import { vogelLayout } from "./layouts/vogel.js";
+import { readControllerFile, readControllerUrl } from "./layouts/import.js";
 import { WebMidi } from "./midi.js";
 import { TunedMidi } from "./tuned-midi.js";
 import { SineSynth } from "./sine.js";
 
 const app = document.querySelector(".app");
 const layoutSelect = document.querySelector("#layout-select");
+const instrumentName = document.querySelector("#instrument-name");
+const keyLegend = document.querySelector(".legend");
 const sineButton = document.querySelector("#sine-button");
 const sourceLink = document.querySelector(".source-link");
 const keyboard = document.querySelector("#keyboard");
@@ -31,6 +34,8 @@ const fullscreenLabel = document.querySelector("#fullscreen-label");
 const keyInfo = document.querySelector("#key-info");
 
 const layouts = new Map([stammLayout, vogelLayout].map((layout) => [layout.id, layout]));
+const importedLayoutId = "imported";
+const organName = instrumentName.textContent;
 const middleC = 440 * 2 ** ((60 - 69) / 12);
 const keysById = new Map();
 let layout;
@@ -378,15 +383,23 @@ function setLayout(id, updateUrl = false) {
   if (layout === selected) return;
   releaseAllNotes();
   layout = selected;
+  const imported = layout.id === importedLayoutId;
   layoutSelect.value = layout.id;
   stage.setAttribute("aria-label", layout.name);
+  instrumentName.textContent = imported ? layout.name : organName;
+  keyLegend.hidden = imported;
   const previousChannel = inputChannel.value;
   banks = Math.max(...layout.keys.map(channelOffset)) + 1;
   setOptions(inputChannel, banks === 1 ? [anyChannel, ...channels] : channels,
     previousChannel !== anyChannel.id && Number(previousChannel) ? previousChannel : banks === 1 ? anyChannel.id : "1");
   inputChannel.labels[0].firstChild.textContent = banks > 1 ? "Input base channel" : "Input channel";
-  sourceLink.href = layout.sourceUrl;
-  sourceLink.textContent = layout.sourceLabel ?? "Vogel’s drawing";
+  sourceLink.hidden = imported;
+  if (imported) {
+    sourceLink.removeAttribute("href");
+  } else {
+    sourceLink.href = layout.sourceUrl;
+    sourceLink.textContent = layout.sourceLabel ?? "Vogel’s drawing";
+  }
   showKey(null);
   drawKeyboard();
   updateInput();
@@ -394,7 +407,7 @@ function setLayout(id, updateUrl = false) {
   refreshMidiMapping();
   fitKeyboard();
 
-  if (updateUrl) {
+  if (updateUrl && !imported) {
     const url = new URL(window.location.href);
     if (layout === stammLayout) url.searchParams.delete("layout");
     else url.searchParams.set("layout", layout.id);
@@ -497,6 +510,61 @@ keyboard.addEventListener("keyup", (event) => {
   stop("keyboard");
 });
 
-layoutSelect.addEventListener("change", () => setLayout(layoutSelect.value, true));
+const controllerDialog = document.querySelector("#controller-dialog");
+const controllerFile = document.querySelector("#controller-file");
+const controllerUrl = document.querySelector("#controller-url");
+const controllerStatus = document.querySelector("#controller-status");
+const openControllerOption = layoutSelect.querySelector('[value="open-controller"]');
+let importRequest = null;
+
+async function importController(read) {
+  importRequest?.abort();
+  const request = new AbortController();
+  importRequest = request;
+  controllerStatus.textContent = "Opening controller…";
+  try {
+    const definition = await read(request.signal);
+    if (importRequest !== request || !controllerDialog.open) return;
+
+    layouts.set(importedLayoutId, { ...definition, id: importedLayoutId });
+    const option = new Option(definition.name, importedLayoutId);
+    const previousOption = layoutSelect.querySelector(`[value="${importedLayoutId}"]`);
+    if (previousOption) previousOption.replaceWith(option);
+    else layoutSelect.add(option, openControllerOption);
+    setLayout(importedLayoutId);
+    controllerDialog.close();
+  } catch (error) {
+    if (importRequest === request && controllerDialog.open) controllerStatus.textContent = error.message;
+  } finally {
+    if (importRequest === request) importRequest = null;
+  }
+}
+
+layoutSelect.addEventListener("change", () => {
+  if (layoutSelect.value === openControllerOption?.value) {
+    layoutSelect.value = layout.id;
+    openPanel(false);
+    controllerDialog.showModal();
+  } else {
+    setLayout(layoutSelect.value, true);
+  }
+});
+controllerFile?.addEventListener("change", () => {
+  const [file] = controllerFile.files;
+  controllerFile.value = "";
+  if (file) importController(() => readControllerFile(file));
+});
+document.querySelector("#controller-link")?.addEventListener("submit", (event) => {
+  event.preventDefault();
+  importController((signal) => readControllerUrl(controllerUrl.value, signal));
+});
+document.querySelector("#controller-close")?.addEventListener("click", () => controllerDialog.close());
+controllerDialog?.addEventListener("close", () => {
+  importRequest?.abort();
+  importRequest = null;
+  controllerUrl.value = "";
+  controllerStatus.textContent = "";
+});
+
 setLayout(new URLSearchParams(location.search).get("layout"));
 new ResizeObserver(fitKeyboard).observe(stage);

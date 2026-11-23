@@ -17,6 +17,10 @@ Read the [VirtualFace guide](https://muk-labs.github.io/VirtualFace/guide.html) 
 
 The guide covers raw input, raw and tuned outputs, and pitch-bend settings. [MIDI setup and address mapping](https://muk-labs.github.io/VirtualFace/guide.html#midi)
 
+## Custom controllers
+
+Choose **Open controller…** in the layout menu to open a local JSON file or a direct HTTPS link. Local files stay in the current browser tab. A single file defines the layout, raw MIDI addresses, and optional tuning. [JSON format](https://muk-labs.github.io/VirtualFace/guide.html#custom-layouts) · [Example JSON](examples/controller.json)
+
 ## Sources and tuning
 
 The guide links to the original drawing, photographs, and technical sources. [The two layouts](https://muk-labs.github.io/VirtualFace/guide.html#layouts) · [Tuning and notation](https://muk-labs.github.io/VirtualFace/guide.html#tuning)
